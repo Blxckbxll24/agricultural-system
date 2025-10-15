@@ -5,7 +5,7 @@ import { SensorCharts } from "@/components/dashboard/sensor-charts"
 import { ParcelMap } from "@/components/dashboard/parcel-map"
 import { CropDistribution } from "@/components/dashboard/crop-distribution"
 import { Skeleton } from "@/components/ui/skeleton"
-import { SensorDataGenerator } from "@/components/dashboard/sensor-data-generator"
+import { DataManagementPanel } from "@/components/dashboard/data-management-panel"
 
 export default function DashboardPage() {
   return (
@@ -20,7 +20,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <SensorDataGenerator />
+        <DataManagementPanel />
 
         <Suspense fallback={<MetricsGridSkeleton />}>
           <MetricsGrid />

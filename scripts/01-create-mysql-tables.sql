@@ -58,3 +58,23 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_email (email),
     INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Agregando tabla para almacenar datos de sensores de la API externa
+CREATE TABLE IF NOT EXISTS sensor_data_external (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sensor_id VARCHAR(100) NOT NULL,
+    parcel_id INT,
+    sensor_type ENUM('temperature', 'humidity', 'rain', 'solar_radiation') NOT NULL,
+    value DECIMAL(10, 2) NOT NULL,
+    unit VARCHAR(20) NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    location VARCHAR(255),
+    quality VARCHAR(20) DEFAULT 'good',
+    metadata JSON,
+    imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sensor_type (sensor_type),
+    INDEX idx_timestamp (timestamp),
+    INDEX idx_parcel_id (parcel_id),
+    INDEX idx_sensor_id (sensor_id),
+    FOREIGN KEY (parcel_id) REFERENCES parcels(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

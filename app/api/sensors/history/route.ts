@@ -1,28 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getSensorRecords } from "@/lib/sensor-storage"
-
-// Access the shared sensor database
-const sensorDatabase: any[] = []
-
-// Generate mock historical data as fallback
-function generateHistoricalData(hours = 24) {
-  const data = []
-  const now = new Date()
-
-  for (let i = hours; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - i * 60 * 60 * 1000)
-    data.push({
-      timestamp: timestamp.toISOString(),
-      temperature: 20 + Math.random() * 10,
-      humidity: 60 + Math.random() * 20,
-      rain: Math.random() > 0.8 ? Math.random() * 5 : 0,
-      solar_radiation: 400 + Math.random() * 300,
-      parcel_id: 1,
-    })
-  }
-
-  return data
-}
+import { getMongoDb } from "@/lib/db/mongodb"
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,35 +9,44 @@ export async function GET(request: NextRequest) {
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "100")
 
-    const sensorRecords = getSensorRecords()
-    let data = sensorRecords.length > 0 ? sensorRecords : generateHistoricalData(hours)
+    const db = await getMongoDb()
+    const collection = db.collection("sensor_readings")
 
-    // Filter by time range if using generated data
-    if (sensorRecords.length > 0) {
-      const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000)
-      data = data.filter((reading: any) => new Date(reading.timestamp) >= cutoffTime)
+    const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000)
+    const filter: any = {
+      timestamp: { $gte: cutoffTime },
     }
 
-    // Filter by parcel if specified
     if (parcelId) {
-      data = data.filter((reading: any) => reading.parcel_id === Number.parseInt(parcelId))
+      filter.parcel_id = Number.parseInt(parcelId)
     }
 
-    // Sort by timestamp descending
-    data.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    const total = await collection.countDocuments(filter)
 
-    // Pagination
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedData = data.slice(startIndex, endIndex)
+    const readings = await collection
+      .find(filter)
+      .sort({ timestamp: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .toArray()
 
     return NextResponse.json({
-      readings: paginatedData,
+      readings: readings.map((r) => ({
+        timestamp: r.timestamp,
+        temperature: r.sensor_type === "temperature" ? r.value : undefined,
+        humidity: r.sensor_type === "humidity" ? r.value : undefined,
+        rain: r.sensor_type === "rain" ? r.value : undefined,
+        solar_radiation: r.sensor_type === "solar_radiation" ? r.value : undefined,
+        parcel_id: r.parcel_id,
+        sensor_type: r.sensor_type,
+        value: r.value,
+        unit: r.unit,
+      })),
       pagination: {
         page,
         limit,
-        total: data.length,
-        totalPages: Math.ceil(data.length / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     })
   } catch (error) {

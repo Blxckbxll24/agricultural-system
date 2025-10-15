@@ -1,59 +1,26 @@
 import { NextResponse } from "next/server"
-
-const parcels = [
-  {
-    id: 1,
-    name: "Parcela Norte",
-    area: 5.2,
-    crop_type: "Maíz",
-    location: { lat: -12.0464, lng: -77.0428 },
-    status: "active",
-    created_at: new Date("2024-01-15"),
-  },
-  {
-    id: 2,
-    name: "Parcela Sur",
-    area: 3.8,
-    crop_type: "Trigo",
-    location: { lat: -12.0474, lng: -77.0438 },
-    status: "active",
-    created_at: new Date("2024-02-20"),
-  },
-  {
-    id: 3,
-    name: "Parcela Este",
-    area: 4.5,
-    crop_type: "Arroz",
-    location: { lat: -12.0454, lng: -77.0418 },
-    status: "active",
-    created_at: new Date("2024-03-10"),
-  },
-  {
-    id: 4,
-    name: "Parcela Oeste",
-    area: 6.1,
-    crop_type: "Soja",
-    location: { lat: -12.0484, lng: -77.0448 },
-    status: "active",
-    created_at: new Date("2024-01-25"),
-  },
-]
+import { query } from "@/lib/db/mysql"
 
 export async function GET() {
   try {
-    const totalArea = parcels.reduce((sum, p) => sum + p.area, 0)
-    const cropDistribution = parcels.reduce(
-      (acc, p) => {
-        acc[p.crop_type] = (acc[p.crop_type] || 0) + 1
+    const totalResult = await query<any[]>("SELECT COUNT(*) as total, SUM(area_hectares) as total_area FROM parcels")
+
+    const activeResult = await query<any[]>("SELECT COUNT(*) as active FROM parcels WHERE status = 'active'")
+
+    const cropDistResult = await query<any[]>("SELECT crop_type, COUNT(*) as count FROM parcels GROUP BY crop_type")
+
+    const cropDistribution = cropDistResult.reduce(
+      (acc, row) => {
+        acc[row.crop_type] = row.count
         return acc
       },
       {} as Record<string, number>,
     )
 
     return NextResponse.json({
-      total_parcels: parcels.length,
-      total_area: totalArea,
-      active_parcels: parcels.filter((p) => p.status === "active").length,
+      total_parcels: totalResult[0]?.total || 0,
+      total_area: totalResult[0]?.total_area || 0,
+      active_parcels: activeResult[0]?.active || 0,
       crop_distribution: cropDistribution,
     })
   } catch (error) {

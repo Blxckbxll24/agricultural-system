@@ -1,24 +1,41 @@
 import { NextResponse } from "next/server"
-
-const EXTERNAL_SENSOR_API = "https://sensores-async-api.onrender.com/api/sensors/all"
+import { getMongoDb } from "@/lib/db/mongodb"
 
 export async function GET() {
   try {
-    // Try to fetch from external API
-    try {
-      const response = await fetch(EXTERNAL_SENSOR_API, {
-        next: { revalidate: 10 }, // Cache for 10 seconds
-      })
+    const db = await getMongoDb()
+    const collection = db.collection("sensor_readings")
 
-      if (response.ok) {
-        const data = await response.json()
-        return NextResponse.json(data)
-      }
-    } catch (fetchError) {
-      console.log("[v0] External API unavailable, using mock data")
+    const latestReadings = await collection
+      .aggregate([
+        {
+          $sort: { timestamp: -1 },
+        },
+        {
+          $group: {
+            _id: "$sensor_type",
+            value: { $first: "$value" },
+            unit: { $first: "$unit" },
+            timestamp: { $first: "$timestamp" },
+            parcel_id: { $first: "$parcel_id" },
+            quality: { $first: "$quality" },
+          },
+        },
+      ])
+      .toArray()
+
+    const result: any = {
+      timestamp: new Date().toISOString(),
     }
 
-    // Fallback to mock data if external API fails
+    latestReadings.forEach((reading: any) => {
+      result[reading._id] = reading.value
+    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error("[v0] Get current sensors error:", error)
+
     const mockData = {
       temperature: 24.5 + Math.random() * 5,
       humidity: 65 + Math.random() * 10,
@@ -29,8 +46,5 @@ export async function GET() {
     }
 
     return NextResponse.json(mockData)
-  } catch (error) {
-    console.error("[v0] Get current sensors error:", error)
-    return NextResponse.json({ error: "Error al obtener datos de sensores" }, { status: 500 })
   }
 }
