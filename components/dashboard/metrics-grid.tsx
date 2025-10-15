@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Thermometer, Droplets, Cloud, Sun } from "lucide-react"
 
-const API_URL = "/api"
+const API_URL = "http://localhost:3003/api"
 
 interface SensorData {
   temperature: number

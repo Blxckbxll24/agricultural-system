@@ -27,6 +27,7 @@ npm run dev
 - ✅ Métricas actuales de sensores (temperatura, humedad, precipitación, radiación solar)
 - ✅ Actualización automática cada 10 segundos
 - ✅ Integración con API externa de sensores
+- ✅ **Modo claro/oscuro** - Cambia entre temas con un clic
 
 ### Visualizaciones
 - 📊 **Gráfico de líneas** - Temperatura histórica (últimas 20 lecturas)
@@ -44,6 +45,11 @@ npm run dev
 - ✅ Filtros por estado y tipo de cultivo
 - ✅ Estadísticas agregadas
 
+### Interfaz de Usuario
+- 🎨 **Tema claro y oscuro** - Adaptable a preferencias del usuario
+- 🎨 Sistema de diseño consistente con tokens semánticos
+- 📱 Diseño responsive para todos los dispositivos
+
 ---
 
 ## 🏗️ Arquitectura
@@ -56,6 +62,7 @@ npm run dev
 - TypeScript
 - Tailwind CSS v4
 - shadcn/ui
+- next-themes (modo claro/oscuro)
 
 **Visualización:**
 - Recharts (gráficos)
