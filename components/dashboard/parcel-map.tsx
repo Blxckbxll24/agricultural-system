@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import dynamic from "next/dynamic"
 
-const API_URL = "http://localhost:3002/api"
+const API_URL = "/api"
 
 // Dynamically import Leaflet to avoid SSR issues
 const MapComponent = dynamic(() => import("@/components/map/leaflet-map"), { ssr: false })

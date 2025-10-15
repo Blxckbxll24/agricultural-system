@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-const API_URL = "http://localhost:3003/api"
+const API_URL = "/api"
 
 export function SensorCharts() {
   const [temperatureData, setTemperatureData] = useState<any[]>([])

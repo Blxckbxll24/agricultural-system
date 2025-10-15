@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 
-const API_URL = "http://localhost:3002/api"
+const API_URL = "/api"
 
 const COLORS = [
   "hsl(var(--chart-1))",

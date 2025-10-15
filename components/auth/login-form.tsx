@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-const AUTH_SERVICE_URL = "http://localhost:3001/api"
+const AUTH_SERVICE_URL = "/api"
 
 export function LoginForm() {
   const router = useRouter()
