@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agricultural-system
+  labels:
+    name: agricultural-system
+    environment: production

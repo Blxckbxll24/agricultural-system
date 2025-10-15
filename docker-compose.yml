@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: agricultural-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: agricultural_system
+      MYSQL_USER: agri_user
+      MYSQL_PASSWORD: agri_password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts:/docker-entrypoint-initdb.d
+    networks:
+      - agricultural-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7.0
+    container_name: agricultural-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: mongopassword123
+      MONGO_INITDB_DATABASE: agricultural_sensors
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - ./scripts/03-setup-mongodb-collections.js:/docker-entrypoint-initdb.d/setup.js
+    networks:
+      - agricultural-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=mysql://agri_user:agri_password123@mysql:3306/agricultural_system
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_EXPIRATION=24h
+    ports:
+      - "3001:3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - agricultural-network
+    restart: unless-stopped
+
+  parcel-service:
+    build:
+      context: ./services/parcel-service
+      dockerfile: Dockerfile
+    container_name: parcel-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - DATABASE_URL=mysql://agri_user:agri_password123@mysql:3306/agricultural_system
+      - AUTH_SERVICE_URL=http://auth-service:3001
+    ports:
+      - "3002:3002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - agricultural-network
+    restart: unless-stopped
+
+  ingestion-service:
+    build:
+      context: ./services/ingestion-service
+      dockerfile: Dockerfile
+    container_name: ingestion-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - MONGODB_URI=mongodb://admin:mongopassword123@mongodb:27017/agricultural_sensors?authSource=admin
+      - SENSOR_API_URL=https://sensores-async-api.onrender.com/api/sensors/all
+      - BATCH_SIZE=1000
+      - CONCURRENT_WORKERS=10
+    ports:
+      - "3003:3003"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - agricultural-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agricultural-frontend
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_AUTH_SERVICE_URL=http://localhost:3001
+      - NEXT_PUBLIC_PARCEL_SERVICE_URL=http://localhost:3002
+      - NEXT_PUBLIC_INGESTION_SERVICE_URL=http://localhost:3003
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - parcel-service
+      - ingestion-service
+    networks:
+      - agricultural-network
+    restart: unless-stopped
+
+networks:
+  agricultural-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  mongodb-data:

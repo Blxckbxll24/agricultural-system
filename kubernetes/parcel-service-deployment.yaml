@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: parcel-service-config
+  namespace: agricultural-system
+data:
+  NODE_ENV: "production"
+  PORT: "3002"
+  DB_HOST: "mysql-service"
+  DB_NAME: "agricultural_system"
+  AUTH_SERVICE_URL: "http://auth-service:3001"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: parcel-service-secret
+  namespace: agricultural-system
+type: Opaque
+stringData:
+  DB_USER: "agri_user"
+  DB_PASSWORD: "agri_password123"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parcel-service
+  namespace: agricultural-system
+  labels:
+    app: parcel-service
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: parcel-service
+  template:
+    metadata:
+      labels:
+        app: parcel-service
+        version: v1
+    spec:
+      containers:
+      - name: parcel-service
+        image: ghcr.io/your-org/parcel-service:latest
+        ports:
+        - containerPort: 3002
+          name: http
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: parcel-service-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: parcel-service-config
+              key: PORT
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: parcel-service-config
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: parcel-service-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: parcel-service-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: parcel-service-secret
+              key: DB_PASSWORD
+        - name: AUTH_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: parcel-service-config
+              key: AUTH_SERVICE_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parcel-service
+  namespace: agricultural-system
+spec:
+  selector:
+    app: parcel-service
+  ports:
+  - port: 3002
+    targetPort: 3002
+    name: http
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: parcel-service-hpa
+  namespace: agricultural-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: parcel-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
