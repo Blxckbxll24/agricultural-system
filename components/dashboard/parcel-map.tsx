@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import dynamic from "next/dynamic"
 
-const PARCEL_SERVICE_URL = process.env.NEXT_PUBLIC_PARCEL_SERVICE_URL || "http://localhost:3002"
+const API_URL = "/api"
 
 // Dynamically import Leaflet to avoid SSR issues
 const MapComponent = dynamic(() => import("@/components/map/leaflet-map"), { ssr: false })
@@ -12,10 +12,9 @@ const MapComponent = dynamic(() => import("@/components/map/leaflet-map"), { ssr
 interface Parcel {
   id: number
   name: string
-  location: string
-  latitude: number
-  longitude: number
+  area: number
   crop_type: string
+  location: { lat: number; lng: number }
   status: string
 }
 
@@ -25,10 +24,7 @@ export function ParcelMap() {
   useEffect(() => {
     const fetchParcels = async () => {
       try {
-        const token = localStorage.getItem("token")
-        const response = await fetch(`${PARCEL_SERVICE_URL}/api/parcels?status=active`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await fetch(`${API_URL}/parcels?status=active`)
         const data = await response.json()
         setParcels(data.parcels || [])
       } catch (error) {

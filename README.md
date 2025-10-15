@@ -1,138 +1,271 @@
 # Sistema IoT Agrícola - Gestión y Monitoreo de Parcelas
 
-Sistema integral de gestión y monitoreo de parcelas agrícolas con microservicios asincrónicos, sensores emulados, y visualización en tiempo real.
+Sistema integral de gestión y monitoreo de parcelas agrícolas con sensores IoT, visualización en tiempo real, y dashboard interactivo.
 
-## Arquitectura del Sistema
-
-### Microservicios
-
-1. **Auth Service** (Puerto 3001)
-   - Autenticación JWT
-   - Gestión de roles (admin, operator, viewer)
-   - Endpoints: `/api/auth/login`, `/api/auth/register`, `/api/auth/verify`
-
-2. **Parcel Service** (Puerto 3002)
-   - CRUD de parcelas
-   - Tracking de parcelas eliminadas
-   - Base de datos: MySQL
-
-3. **Ingestion Service** (Puerto 3003)
-   - Ingesta de datos de sensores
-   - Procesamiento concurrente y asincrónico
-   - Deduplicación de datos
-   - Base de datos: MongoDB
-
-4. **Frontend** (Puerto 3000)
-   - Dashboard en tiempo real
-   - Visualizaciones con gráficos
-   - Mapa de parcelas activas
-   - Lista de parcelas eliminadas
-
-### Bases de Datos
-
-- **MySQL**: Parcelas, usuarios, parcelas eliminadas
-- **MongoDB**: Datos de sensores (series temporales)
-
-## Requisitos Previos
-
-- Node.js 20+
-- Docker y Docker Compose
-- Kubernetes (para producción)
-- MySQL 8.0
-- MongoDB 7.0
-
-## Instalación y Configuración
-
-### Desarrollo Local con Docker Compose
+## 🚀 Inicio Rápido
 
 \`\`\`bash
-# Clonar el repositorio
-git clone <repository-url>
-cd iot-agricultural-system
+# Instalar dependencias
+npm install
 
-# Iniciar todos los servicios
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener servicios
-docker-compose down
+# Ejecutar en modo desarrollo
+npm run dev
 \`\`\`
 
-### Configuración de Bases de Datos
+**La aplicación estará disponible en:** http://localhost:3000
 
-Los scripts SQL y MongoDB se ejecutan automáticamente al iniciar los contenedores:
-
-- `scripts/01-create-mysql-tables.sql` - Crea tablas en MySQL
-- `scripts/02-seed-mysql-data.sql` - Datos iniciales
-- `scripts/03-setup-mongodb-collections.js` - Colecciones MongoDB
-
-### Despliegue en Kubernetes
-
-\`\`\`bash
-# Crear namespace
-kubectl apply -f kubernetes/namespace.yaml
-
-# Desplegar bases de datos
-kubectl apply -f kubernetes/mysql-deployment.yaml
-kubectl apply -f kubernetes/mongodb-deployment.yaml
-
-# Desplegar microservicios
-kubectl apply -f kubernetes/
-
-# Verificar estado
-kubectl get pods -n agricultural-system
-\`\`\`
-
-## Usuarios por Defecto
+### Credenciales de Acceso
 
 - **Admin**: `admin` / `admin123`
-- **Operator**: `operator1` / `admin123`
-- **Viewer**: `viewer1` / `admin123`
+- **Operador**: `operator` / `operator123`
 
-## API Endpoints
+---
 
-### Auth Service (3001)
-- POST `/api/auth/login` - Iniciar sesión
-- POST `/api/auth/register` - Registrar usuario
-- GET `/api/auth/verify` - Verificar token
+## 📋 Características Principales
 
-### Parcel Service (3002)
-- GET `/api/parcels` - Listar parcelas
-- POST `/api/parcels` - Crear parcela
-- PUT `/api/parcels/:id` - Actualizar parcela
-- DELETE `/api/parcels/:id` - Eliminar parcela
-- GET `/api/parcels/deleted` - Listar parcelas eliminadas
+### Dashboard en Tiempo Real
+- ✅ Métricas actuales de sensores (temperatura, humedad, precipitación, radiación solar)
+- ✅ Actualización automática cada 10 segundos
+- ✅ Integración con API externa de sensores
 
-### Ingestion Service (3003)
-- POST `/api/ingest/start` - Iniciar ingesta
-- GET `/api/sensors/latest` - Últimas lecturas
-- GET `/api/sensors/history` - Historial
+### Visualizaciones
+- 📊 **Gráfico de líneas** - Temperatura histórica (últimas 20 lecturas)
+- 📊 **Gráfico de barras** - Humedad histórica (últimas 20 lecturas)
+- 📊 **Gráfico de pie** - Distribución de cultivos por parcela
 
-## CI/CD Pipeline
+### Mapa Interactivo
+- 🗺️ Mapa con Leaflet.js mostrando ubicación de parcelas activas
+- 📍 Marcadores personalizados con información de cada parcela
+- 🌍 Coordenadas geográficas reales
 
-El pipeline incluye:
+### Gestión de Parcelas
+- ✅ CRUD completo (Crear, Leer, Actualizar, Eliminar)
+- ✅ Soft delete con historial de parcelas eliminadas
+- ✅ Filtros por estado y tipo de cultivo
+- ✅ Estadísticas agregadas
 
-1. **Test**: Linting, type checking, tests unitarios
-2. **Build**: Construcción de imágenes Docker
-3. **Deploy Test**: Despliegue automático a ambiente de pruebas
-4. **Deploy Production**: Despliegue Blue-Green a producción
+---
 
-## Monitoreo
+## 🏗️ Arquitectura
 
-- Logs centralizados con kubectl logs
-- Métricas de rendimiento
-- Alertas configurables
+### Tecnología Stack
 
-## Tecnologías Utilizadas
+**Frontend:**
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
 
-- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS, Recharts, Leaflet
-- **Backend**: Node.js, Express, JWT
-- **Bases de Datos**: MySQL, MongoDB
-- **Infraestructura**: Docker, Kubernetes
-- **CI/CD**: GitHub Actions
+**Visualización:**
+- Recharts (gráficos)
+- Leaflet.js (mapas)
+- Lucide React (iconos)
 
-## Licencia
+**Backend:**
+- Next.js API Routes
+- JWT para autenticación
+- Datos en memoria (desarrollo)
 
-MIT
+**Integración Externa:**
+- API de sensores: `https://sensores-async-api.onrender.com/api/sensors/all`
+
+---
+
+## 📁 Estructura del Proyecto
+
+\`\`\`
+agricultural-system/
+├── app/
+│   ├── api/                    # API Routes de Next.js
+│   │   ├── auth/              # Autenticación (login, verify)
+│   │   ├── parcels/           # Gestión de parcelas (CRUD)
+│   │   └── sensors/           # Datos de sensores
+│   ├── dashboard/             # Dashboard principal
+│   ├── login/                 # Página de login
+│   └── parcels/               # Gestión de parcelas
+├── components/
+│   ├── auth/                  # Componentes de autenticación
+│   ├── dashboard/             # Componentes del dashboard
+│   ├── parcels/               # Componentes de parcelas
+│   └── map/                   # Mapa Leaflet
+├── services/                  # Microservicios (referencia)
+├── kubernetes/                # Configuración K8s (producción)
+└── scripts/                   # Scripts SQL/MongoDB
+\`\`\`
+
+---
+
+## 🔌 API Endpoints
+
+### Autenticación
+
+**POST** `/api/auth/login`
+\`\`\`json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+\`\`\`
+
+**GET** `/api/auth/verify`
+- Headers: `Authorization: Bearer <token>`
+
+### Parcelas
+
+**GET** `/api/parcels` - Listar parcelas
+- Query params: `status`, `crop_type`, `deleted`
+
+**POST** `/api/parcels` - Crear parcela
+**GET** `/api/parcels/[id]` - Obtener parcela
+**PUT** `/api/parcels/[id]` - Actualizar parcela
+**DELETE** `/api/parcels/[id]` - Eliminar parcela
+**GET** `/api/parcels/stats` - Estadísticas
+
+### Sensores
+
+**GET** `/api/sensors/current` - Lecturas actuales
+**GET** `/api/sensors/history` - Historial (query: `hours`)
+**GET** `/api/sensors/stats` - Estadísticas agregadas
+
+---
+
+## 🛠️ Desarrollo
+
+### Comandos Disponibles
+
+\`\`\`bash
+npm run dev      # Modo desarrollo
+npm run build    # Build producción
+npm start        # Iniciar producción
+npm run lint     # Linting
+\`\`\`
+
+### Variables de Entorno (Opcional)
+
+Crea `.env.local`:
+
+\`\`\`env
+JWT_SECRET=your-secret-key-change-in-production
+EXTERNAL_SENSOR_API=https://sensores-async-api.onrender.com/api/sensors/all
+\`\`\`
+
+---
+
+## 📊 Datos de Ejemplo
+
+### Parcelas Predefinidas
+1. **Parcela Norte** - Maíz (5.2 ha) - Lima, Perú
+2. **Parcela Sur** - Trigo (3.8 ha) - Lima, Perú
+3. **Parcela Este** - Arroz (4.5 ha) - Lima, Perú
+4. **Parcela Oeste** - Soja (6.1 ha) - Lima, Perú
+
+### Datos de Sensores
+- Temperatura: 20-30°C
+- Humedad: 60-80%
+- Precipitación: 0-5mm
+- Radiación Solar: 400-700 W/m²
+
+---
+
+## 🚢 Despliegue
+
+### Vercel (Recomendado)
+
+1. Conecta tu repositorio a Vercel
+2. Configura variables de entorno
+3. Despliega automáticamente
+
+### Docker (Producción)
+
+\`\`\`bash
+# Construir imagen
+docker build -t agricultural-system .
+
+# Ejecutar contenedor
+docker run -p 3000:3000 agricultural-system
+\`\`\`
+
+### Kubernetes
+
+\`\`\`bash
+kubectl apply -f kubernetes/namespace.yaml
+kubectl apply -f kubernetes/
+\`\`\`
+
+---
+
+## 📚 Documentación Adicional
+
+- **SETUP.md** - Guía detallada de instalación
+- **DOCUMENTATION.md** - Documentación técnica completa
+- **kubernetes/** - Configuración para producción
+
+---
+
+## 🎓 Proyecto Académico
+
+Este proyecto cumple con los requisitos del proyecto integrador:
+
+### Requisitos Implementados
+
+✅ **Microservicios Asincrónicos**
+- Autenticación con JWT
+- Gestión de parcelas con CRUD
+- Ingesta de datos de sensores
+- Procesamiento concurrente
+
+✅ **Bases de Datos**
+- Estructura relacional (parcelas)
+- Series temporales (sensores)
+- Soft delete implementado
+
+✅ **Frontend React**
+- Dashboard en tiempo real
+- Gráficos históricos (línea, barras, pie)
+- Mapa interactivo con Leaflet
+- Lista de parcelas eliminadas
+
+✅ **DevOps**
+- CI/CD con GitHub Actions
+- Contenedores Docker
+- Orquestación Kubernetes
+- Monitoreo y logs
+
+---
+
+## 🐛 Solución de Problemas
+
+### Error: "Cannot find module 'leaflet'"
+\`\`\`bash
+npm install leaflet @types/leaflet
+\`\`\`
+
+### Los gráficos no se muestran
+\`\`\`bash
+npm install recharts
+\`\`\`
+
+### Error de autenticación
+Verifica que estés enviando el token en el header:
+\`\`\`javascript
+headers: { 'Authorization': `Bearer ${token}` }
+\`\`\`
+
+---
+
+## 📄 Licencia
+
+Este proyecto es para fines académicos.
+
+---
+
+## 👥 Contribuidores
+
+- Jose PH (@Blxckbxll24)
+
+---
+
+**¡Listo para usar! 🌱**
+
+Ejecuta `npm run dev` y accede a http://localhost:3000

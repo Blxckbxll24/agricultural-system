@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-const INGESTION_SERVICE_URL = process.env.NEXT_PUBLIC_INGESTION_SERVICE_URL || "http://localhost:3003"
+const API_URL = "/api"
 
 export function SensorCharts() {
   const [temperatureData, setTemperatureData] = useState<any[]>([])
@@ -13,32 +13,19 @@ export function SensorCharts() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch temperature data
-        const tempResponse = await fetch(
-          `${INGESTION_SERVICE_URL}/api/sensors/history?sensor_type=temperature&limit=50`,
-        )
-        const tempData = await tempResponse.json()
-
-        // Fetch humidity data
-        const humResponse = await fetch(`${INGESTION_SERVICE_URL}/api/sensors/history?sensor_type=humidity&limit=50`)
-        const humData = await humResponse.json()
+        const response = await fetch(`${API_URL}/sensors/history?hours=24`)
+        const data = await response.json()
 
         // Transform data for charts
-        const tempChartData = tempData.readings
-          ?.slice(0, 20)
-          .reverse()
-          .map((r: any) => ({
-            time: new Date(r.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-            value: r.value,
-          }))
+        const tempChartData = data.readings?.slice(0, 20).map((r: any) => ({
+          time: new Date(r.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+          value: r.temperature,
+        }))
 
-        const humChartData = humData.readings
-          ?.slice(0, 20)
-          .reverse()
-          .map((r: any) => ({
-            time: new Date(r.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-            value: r.value,
-          }))
+        const humChartData = data.readings?.slice(0, 20).map((r: any) => ({
+          time: new Date(r.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+          value: r.humidity,
+        }))
 
         setTemperatureData(tempChartData || [])
         setHumidityData(humChartData || [])

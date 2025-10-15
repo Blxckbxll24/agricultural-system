@@ -4,25 +4,25 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Thermometer, Droplets, Cloud, Sun } from "lucide-react"
 
-const INGESTION_SERVICE_URL = process.env.NEXT_PUBLIC_INGESTION_SERVICE_URL || "http://localhost:3003"
+const API_URL = "/api"
 
-interface CurrentReading {
-  parcel_id: number
-  sensor_type: string
-  value: number
-  unit: string
+interface SensorData {
+  temperature: number
+  humidity: number
+  rain: number
+  solar_radiation: number
   timestamp: string
 }
 
 export function MetricsGrid() {
-  const [readings, setReadings] = useState<CurrentReading[]>([])
+  const [data, setData] = useState<SensorData | null>(null)
 
   useEffect(() => {
     const fetchCurrentReadings = async () => {
       try {
-        const response = await fetch(`${INGESTION_SERVICE_URL}/api/sensors/current`)
-        const data = await response.json()
-        setReadings(data.current_readings || [])
+        const response = await fetch(`${API_URL}/sensors/current`)
+        const sensorData = await response.json()
+        setData(sensorData)
       } catch (error) {
         console.error("[v0] Failed to fetch current readings:", error)
       }
@@ -34,37 +34,31 @@ export function MetricsGrid() {
     return () => clearInterval(interval)
   }, [])
 
-  const getAverageValue = (sensorType: string) => {
-    const filtered = readings.filter((r) => r.sensor_type === sensorType)
-    if (filtered.length === 0) return 0
-    return filtered.reduce((sum, r) => sum + r.value, 0) / filtered.length
-  }
-
   const metrics = [
     {
       title: "Temperatura Promedio",
-      value: getAverageValue("temperature").toFixed(1),
+      value: data?.temperature?.toFixed(1) || "0.0",
       unit: "°C",
       icon: Thermometer,
       color: "text-chart-1",
     },
     {
       title: "Humedad Promedio",
-      value: getAverageValue("humidity").toFixed(1),
+      value: data?.humidity?.toFixed(1) || "0.0",
       unit: "%",
       icon: Droplets,
       color: "text-chart-2",
     },
     {
       title: "Precipitación",
-      value: getAverageValue("rain").toFixed(1),
+      value: data?.rain?.toFixed(1) || "0.0",
       unit: "mm",
       icon: Cloud,
       color: "text-chart-3",
     },
     {
       title: "Radiación Solar",
-      value: getAverageValue("solar_radiation").toFixed(0),
+      value: data?.solar_radiation?.toFixed(0) || "0",
       unit: "W/m²",
       icon: Sun,
       color: "text-chart-4",

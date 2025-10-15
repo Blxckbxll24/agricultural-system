@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-const AUTH_SERVICE_URL = process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || "http://localhost:3001"
+const AUTH_SERVICE_URL = "/api"
 
 export function LoginForm() {
   const router = useRouter()
@@ -25,7 +25,7 @@ export function LoginForm() {
     setLoading(true)
 
     try {
-      const response = await fetch(`${AUTH_SERVICE_URL}/api/auth/login`, {
+      const response = await fetch(`${AUTH_SERVICE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

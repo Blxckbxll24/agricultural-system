@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 
-const PARCEL_SERVICE_URL = process.env.NEXT_PUBLIC_PARCEL_SERVICE_URL || "http://localhost:3002"
+const API_URL = "/api"
 
 const COLORS = [
   "hsl(var(--chart-1))",
@@ -20,18 +20,15 @@ export function CropDistribution() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token")
-        const response = await fetch(`${PARCEL_SERVICE_URL}/api/parcels/statistics`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await fetch(`${API_URL}/parcels/stats`)
         const result = await response.json()
 
-        const chartData = result.crop_distribution?.map((item: any) => ({
-          name: item.crop_type,
-          value: item.count,
+        const chartData = Object.entries(result.crop_distribution || {}).map(([name, value]) => ({
+          name,
+          value,
         }))
 
-        setData(chartData || [])
+        setData(chartData)
       } catch (error) {
         console.error("[v0] Failed to fetch crop distribution:", error)
       }
