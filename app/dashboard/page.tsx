@@ -5,6 +5,7 @@ import { SensorCharts } from "@/components/dashboard/sensor-charts"
 import { ParcelMap } from "@/components/dashboard/parcel-map"
 import { CropDistribution } from "@/components/dashboard/crop-distribution"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SensorDataGenerator } from "@/components/dashboard/sensor-data-generator"
 
 export default function DashboardPage() {
   return (
@@ -18,6 +19,8 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mt-1">Monitoreo en tiempo real de sensores IoT y gestión de parcelas</p>
           </div>
         </div>
+
+        <SensorDataGenerator />
 
         <Suspense fallback={<MetricsGridSkeleton />}>
           <MetricsGrid />
