@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Copiar archivos de dependencias
 COPY package.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Reconstruir el código fuente solo cuando sea necesario
 FROM base AS builder
