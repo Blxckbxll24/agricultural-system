@@ -3,8 +3,6 @@
 # Development Environment Validation Script
 # Validates that all required tools and configurations are in place
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

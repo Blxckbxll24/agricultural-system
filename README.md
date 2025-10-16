@@ -204,9 +204,22 @@ kubectl apply -f kubernetes/
 
 ## 📚 Documentación Adicional
 
-- **SETUP.md** - Guía detallada de instalación
-- **DOCUMENTATION.md** - Documentación técnica completa
+- **[SETUP.md](SETUP.md)** - Guía detallada de instalación frontend
+- **[DATABASE-SETUP.md](DATABASE-SETUP.md)** - Guía completa de configuración de bases de datos
+- **[DOCKER-SETUP.md](DOCKER-SETUP.md)** - Guía de despliegue con Docker
+- **[DOCUMENTATION.md](DOCUMENTATION.md)** - Documentación técnica completa
+- **[scripts/README.md](scripts/README.md)** - Scripts de utilidad y validación
 - **kubernetes/** - Configuración para producción
+
+### Herramientas de Validación
+
+```bash
+# Validar configuración del entorno
+./scripts/validate-environment.sh
+
+# Verificar salud de bases de datos
+./scripts/check-db-health.sh
+```
 
 ---
 
@@ -258,6 +271,31 @@ Verifica que estés enviando el token en el header:
 \`\`\`javascript
 headers: { 'Authorization': `Bearer ${token}` }
 \`\`\`
+
+### Problemas de Conexión a Base de Datos
+
+Si encuentras errores de conexión a MySQL o MongoDB:
+
+1. **Verifica que las bases de datos estén corriendo:**
+   \`\`\`bash
+   ./scripts/check-db-health.sh
+   \`\`\`
+
+2. **Inicia las bases de datos con Docker:**
+   \`\`\`bash
+   docker-compose up -d mysql mongodb
+   \`\`\`
+
+3. **Consulta la guía completa:**
+   Ver [DATABASE-SETUP.md](DATABASE-SETUP.md) para instrucciones detalladas de configuración y troubleshooting.
+
+### Error: ECONNREFUSED en microservicios
+
+Los microservicios implementan reintentos automáticos con backoff exponencial. Si persisten los errores:
+
+1. Verifica las variables de entorno en `.env`
+2. Revisa los logs del servicio: `docker-compose logs -f [service-name]`
+3. Verifica el health endpoint: `curl http://localhost:3001/health`
 
 ---
 
